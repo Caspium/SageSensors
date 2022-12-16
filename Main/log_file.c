@@ -4,18 +4,17 @@
 #include "errors.h"
 
 // Global Variables
-FILE* log_file_ptr;
+FILE *log_file_ptr;
 char csv_filename[512];
 
 // Function Prototypes
-static void get_path_and_filename(char* full_path, char* path, char* filename);
-static void check_log_file_error (int status);
-
+static void get_path_and_filename(char *full_path, char *path, char *filename);
+static void check_log_file_error(int status);
 
 // Get the error message for the specified error code.
-static void get_path_and_filename(char* full_path, char* path, char* filename)
+static void get_path_and_filename(char *full_path, char *path, char *filename)
 {
-    char* p;
+    char *p;
     int path_len = 0;
 
     // Get the pointer to the last occurance of '/'.  This is the
@@ -29,18 +28,18 @@ static void get_path_and_filename(char* full_path, char* path, char* filename)
     strncpy(path, full_path, path_len);
 
     // copy the file name part of the full path
-    strcpy(filename, full_path+path_len);
+    strcpy(filename, full_path + path_len);
 
     return;
 }
 
 // Show the OpenFile dialog to allow the name of the log file to be chosen.
-char* choose_log_file(GtkWidget *parent_window, char* default_path)
+char *choose_log_file(GtkWidget *parent_window, char *default_path)
 {
     struct stat st;
     char path[512] = {'\0'};
     char filename[256] = {'\0'};
-    char* new_filename;
+    char *new_filename;
     GtkWidget *dialog;
     gint res;
 
@@ -54,28 +53,28 @@ char* choose_log_file(GtkWidget *parent_window, char* default_path)
     }
 
     // Create the OpenFile dialog.
-    dialog = gtk_file_chooser_dialog_new ("Select Log File",
-                                          (GtkWindow*)parent_window,
-                                          GTK_FILE_CHOOSER_ACTION_SAVE,
-                                          ("_Cancel"),
-                                          GTK_RESPONSE_CANCEL,
-                                          ("_OK"),
-                                          GTK_RESPONSE_ACCEPT,
-                                          NULL);
+    dialog = gtk_file_chooser_dialog_new("Select Log File",
+                                         (GtkWindow *)parent_window,
+                                         GTK_FILE_CHOOSER_ACTION_SAVE,
+                                         ("_Cancel"),
+                                         GTK_RESPONSE_CANCEL,
+                                         ("_OK"),
+                                         GTK_RESPONSE_ACCEPT,
+                                         NULL);
 
     // Set the initial directory
-    gtk_file_chooser_set_current_folder ((GtkFileChooser*)dialog, path);
+    gtk_file_chooser_set_current_folder((GtkFileChooser *)dialog, path);
 
     // Set the initial file name.
-    gtk_file_chooser_set_current_name((GtkFileChooser*)dialog, filename);
+    gtk_file_chooser_set_current_name((GtkFileChooser *)dialog, filename);
 
     // Show the dialog.
-    res = gtk_dialog_run (GTK_DIALOG (dialog));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_ACCEPT)
     {
         // get the selected file name path
-        GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
-        new_filename = gtk_file_chooser_get_filename (chooser);
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+        new_filename = gtk_file_chooser_get_filename(chooser);
     }
     else
     {
@@ -84,19 +83,19 @@ char* choose_log_file(GtkWidget *parent_window, char* default_path)
     }
 
     // Destroy the dialog.
-    gtk_widget_destroy (dialog);
+    gtk_widget_destroy(dialog);
 
     // Return the path to the selected file.
     return new_filename;
 }
 
-
 // Open the specified file for writing.
-FILE* open_log_file (char* path)
+FILE *open_log_file(char *path)
 {
     struct stat st;
     char directory[512] = {'\0'};
-    char filename[256] = {'\0'};;
+    char filename[256] = {'\0'};
+    ;
 
     // Get the path and file name.
     get_path_and_filename(path, directory, filename);
@@ -114,7 +113,7 @@ FILE* open_log_file (char* path)
     return log_file_ptr;
 }
 
-int init_log_file(FILE* log_file_ptr, uint8_t chanMask, int max_channels)
+int init_log_file(FILE *log_file_ptr, uint8_t chanMask, int max_channels)
 {
     int i = 0;
     int channel = 0;
@@ -123,11 +122,11 @@ int init_log_file(FILE* log_file_ptr, uint8_t chanMask, int max_channels)
 
     channel = 0;
 
-	if (write_status <= 0)
-	{
-		// exit if an error occurred.
-		return write_status;
-	}
+    if (write_status <= 0)
+    {
+        // exit if an error occurred.
+        return write_status;
+    }
 
     for (i = 0; i < max_channels; i++)
     {
@@ -135,7 +134,7 @@ int init_log_file(FILE* log_file_ptr, uint8_t chanMask, int max_channels)
         // print the channel number
         if (chanMask & 1)
         {
-            //print channel
+            // print channel
             write_status = fprintf(log_file_ptr, "Chan %d, ", i);
             if (write_status <= 0)
             {
@@ -157,11 +156,10 @@ int init_log_file(FILE* log_file_ptr, uint8_t chanMask, int max_channels)
     return write_status;
 }
 
-
 // Convert the numeric data to ASCII values, seperated by commas (CSV), and
 // write the data using the specified file pointer.
-int write_log_file(FILE* log_file_ptr, double* read_buf, int samplesPerChannel,
-    int numberOfChannels)
+int write_log_file(FILE *log_file_ptr, double *read_buf, int samplesPerChannel,
+                   int numberOfChannels)
 {
     int i = 0;
     int j = 0;
@@ -183,7 +181,7 @@ int write_log_file(FILE* log_file_ptr, double* read_buf, int samplesPerChannel,
         for (j = 0; j < numberOfChannels; j++)
         {
             // Convert the data sample to ASCII
-            sprintf(buf,"%2.6lf,", read_buf[scan_start_index+j]);
+            sprintf(buf, "%2.6lf,", read_buf[scan_start_index + j]);
 
             // Add the data sample to the string to be written.
             strcat(str, buf);
@@ -211,9 +209,9 @@ int write_log_file(FILE* log_file_ptr, double* read_buf, int samplesPerChannel,
     return write_status;
 }
 
-static void check_log_file_error (int status)
+static void check_log_file_error(int status)
 {
-    if(status == -1)
+    if (status == -1)
     {
         show_error_in_main_thread(MAXIMUM_FILE_SIZE_EXCEEDED);
     }
